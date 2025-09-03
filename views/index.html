@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Users</title>
+  
+</head>
+<body>
+  <h1>Users</h1>
+  <ul id="users"></ul>
+
+  <h1><a href="/links">Links</a></h1>
+  <ul id="links"></ul>
+
+  <script>
+    fetch("/get_urls")
+      .then(res => res.json())
+      .then(data => {
+        const list = document.getElementById("users");
+        data.forEach(urls => {
+          const li = document.createElement("li");
+          li.textContent = `${urls.id}: ${urls.start_time}`;
+          list.appendChild(li);
+        });
+      })
+      .catch(err => console.error(err));
+
+       // Fetch Links
+    fetch("/get_links")
+      .then(res => res.json())
+      .then(data => {
+        const list = document.getElementById("links");
+        data.forEach(links => {
+          const li = document.createElement("li");
+          li.textContent = `${links.id}: ${links.to_url}`;
+          list.appendChild(li);
+        });
+      })
+      .catch(err => console.error(err));
+  </script>
+
+
+ 
+
+
+
+
+
+
+
+</body>
+</html>
