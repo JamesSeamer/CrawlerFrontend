@@ -37,13 +37,21 @@ app.get("/get_links", async (req, res) => {
   }
 });
 
+app.get("/:page", (req, res) => {
+  const page = req.params.page; // grabs whatever is after "/"
+  const filePath = path.join(__dirname, "views", `${page}.html`);
+
+  res.sendFile(filePath, (err) => {
+    if (err) {
+      res.status(404).send("Page not found");
+    }
+  });
+});
+
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "views", "index.html"));
 });
 
-app.get("/links", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "links.html"));
-});
 
 const PORT = 4000;
 app.listen(PORT, () => {
