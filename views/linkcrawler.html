@@ -1,31 +1,52 @@
 <!DOCTYPE html>
 <html>
-<head>Link Crawler</head>
+<head>Link Crawler
+
+
+</head>
 <body>
 
 
-<form id="crawlForm" method="POST">
+<form id="crawlForm">
   <label for="url">URL to crawl:</label>
   <input type="text" id="url" name="url" placeholder="Enter URL" required>
 
   <button type="submit">Start Crawl</button>
 </form>
 
+<div id="status"></div>
+
 <script>
   const form = document.getElementById('crawlForm');
+  const statusDiv = document.getElementById('status');
 
-  form.addEventListener('submit', function(e) {
-    e.preventDefault(); // prevent default submission
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault(); // prevent default navigation
 
     const urlInput = document.getElementById('url').value;
-    // Update form action to include the input as a query param
-    form.action = `http://localhost:3000/start-crawl?crawl_url=${urlInput}`;
+    const crawlEndpoint = `http://localhost:3000/start-crawl?crawl_url=${encodeURIComponent(urlInput)}`;
 
-    form.submit(); // submit the form with the new action
+    statusDiv.textContent = "Crawling in progress...";
+
+    try {
+      const response = await fetch(crawlEndpoint, {
+        method: 'POST' // or 'POST' depending on your server
+      });
+
+      if (!response.ok) throw new Error(`Server error: ${response.status}`);
+
+      const result = await response.text(); // or response.json() if server returns JSON
+      statusDiv.textContent = "Crawl completed!";
+      console.log("Crawl result:", result);
+
+    } catch (err) {
+      statusDiv.textContent = "Error during crawl.";
+      console.error(err);
+    }
   });
 </script>
 
-
-
 </body>
 </html>
+
+

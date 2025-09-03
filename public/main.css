@@ -1,0 +1,7 @@
+:root{
+    --colour_1: #fb4136;
+}
+
+th{
+    background-color: var(--colour_1);
+}
