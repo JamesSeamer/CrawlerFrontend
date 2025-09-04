@@ -1,19 +1,25 @@
 <!DOCTYPE html>
-<html>
-    <head>
-    <title>Internal 404s</title>
-   
-      <script type="text/javascript" src="//cdn.datatables.net/2.3.3/js/dataTables.min.js"></script>
+    <html>
+        <head>
+
+<script type="text/javascript" src="//cdn.datatables.net/2.3.3/js/dataTables.min.js"></script>
 
 <link rel='stylesheet' href='//cdn.datatables.net/2.3.3/css/dataTables.dataTables.min.css' type='text/css' media='all' />
 <link rel='stylesheet' href='/main.css' type='text/css' media='all' />
 
  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-</head>
-<body>
 
- <h1>Internal 404s</h1>
-<table id="Internal404sTable" class="display">
+            <title>
+                External 404s
+            </title>
+
+
+        </head>
+        <body>
+            <h1>External 404s</h1>
+
+
+<table id="External404sTable" class="display">
       <thead>
           <tr>
               <th>ID</th>
@@ -29,10 +35,10 @@
 
   <script>
     // Fetch Links
-    fetch("/get_internal404s")
+    fetch("/get_external404s")
       .then(res => res.json())
       .then(data => {
-          const tableBody = document.querySelector("#Internal404sTable tbody");
+          const tableBody = document.querySelector("#External404sTable tbody");
           data.forEach(url => {
               const row = document.createElement("tr");
               row.innerHTML = `
@@ -45,12 +51,43 @@
           });
 
           // Initialize DataTables after rows are added
-          $('#Internal404sTable').DataTable({
+          $('#External404sTable').DataTable({
             
           });
       })
       .catch(err => console.error(err));
   </script>
-</body>
 
-</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        </body>
+    </html>

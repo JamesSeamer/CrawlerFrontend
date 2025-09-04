@@ -41,9 +41,9 @@ app.get("/get_links", async (req, res) => {
 });
 
 
-app.get("/get_404s", async (req, res) => {
+app.get("/get_internal404s", async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM seo_crawls.url WHERE status_code = 404;");
+    const [rows] = await pool.query("SELECT * FROM seo_crawls.url LEFT JOIN seo_crawls.crawls ON seo_crawls.crawls.id = seo_crawls.url.crawl_id WHERE seo_crawls.url.url NOT LIKE CONCAT( '%' , REPLACE(SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING_INDEX(start_url, '://', -1),'/', 1),':', 1),'www.', ''), '%');");
     res.json(rows);
   } catch (err) {
     console.error(err);
@@ -53,7 +53,7 @@ app.get("/get_404s", async (req, res) => {
 
 app.get("/get_images", async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM seo_crawls.url WHERE content_type LIKE 'image/%';;");
+    const [rows] = await pool.query("SELECT * FROM seo_crawls.url WHERE content_type LIKE 'image/%';");
     res.json(rows);
   } catch (err) {
     console.error(err);
@@ -64,6 +64,16 @@ app.get("/get_images", async (req, res) => {
 app.get("/get_metadesc", async (req, res) => {
   try {
     const [rows] = await pool.query("SELECT * FROM seo_crawls.url LIMIT 10;");
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Database query failed" });
+  }
+});
+
+app.get("/get_external404s", async (req, res) => {
+  try {
+    const [rows] = await pool.query("SELECT * FROM seo_crawls.url LEFT JOIN seo_crawls.crawls ON seo_crawls.crawls.id = seo_crawls.url.crawl_id WHERE seo_crawls.url.url NOT LIKE CONCAT( '%' , REPLACE(SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING_INDEX(start_url, '://', -1),'/', 1),':', 1),'www.', ''), '%');");
     res.json(rows);
   } catch (err) {
     console.error(err);
