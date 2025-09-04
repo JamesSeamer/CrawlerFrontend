@@ -40,7 +40,9 @@
           });
 
           // Initialize DataTables after rows are added
-          $('#linksTable').DataTable();
+          $('#linksTable').DataTable({
+            
+          });
       })
       .catch(err => console.error(err));
   </script>

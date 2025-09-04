@@ -50,6 +50,7 @@ app.get("/get_404s", async (req, res) => {
     res.status(500).json({ error: "Database query failed" });
   }
 });
+
 app.get("/get_images", async (req, res) => {
   try {
     const [rows] = await pool.query("SELECT * FROM seo_crawls.url WHERE content_type LIKE 'image/%';;");
@@ -59,6 +60,26 @@ app.get("/get_images", async (req, res) => {
     res.status(500).json({ error: "Database query failed" });
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 app.get("/:page", (req, res) => {
   const page = req.params.page; // grabs whatever is after "/"
   const filePath = path.join(__dirname, "views", `${page}.html`);
@@ -70,9 +91,18 @@ app.get("/:page", (req, res) => {
   });
 });
 
+
+
+
+
+
+
+
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "views", "index.html"));
 });
+
+
 
 
 const PORT = 4000;
