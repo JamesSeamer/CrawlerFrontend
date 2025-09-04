@@ -61,7 +61,7 @@ app.get("/get_images", async (req, res) => {
   }
 });
 
-app.get("/get_metadesc", async (req, res) => {
+app.get("/get_meta", async (req, res) => {
   try {
     const [rows] = await pool.query("SELECT * FROM seo_crawls.url LIMIT 10;");
     res.json(rows);
