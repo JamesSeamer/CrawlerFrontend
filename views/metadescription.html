@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+    <html>
+        <head>
+
+            <title>Meta Descriptions</title>
+
+
+<script type="text/javascript" src="//cdn.datatables.net/2.3.3/js/dataTables.min.js"></script>
+
+<link rel='stylesheet' href='//cdn.datatables.net/2.3.3/css/dataTables.dataTables.min.css' type='text/css' media='all' />
+<link rel='stylesheet' href='/main.css' type='text/css' media='all' />
+
+ <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+
+    <table id="metaDescTable" class="display">
+      <thead>
+          <tr>
+              <th>ID</th>
+              <th>Meta Description</th>
+              <th>Title</th>
+              <th>url</th>
+              
+          </tr>
+      </thead>
+      <tbody>
+          <!-- Rows will be injected here -->
+      </tbody>
+  </table>
+
+  <script>
+    // Fetch Links
+    fetch("/get_metadesc")
+      .then(res => res.json())
+      .then(data => {
+          const tableBody = document.querySelector("#metaDescTable tbody");
+          data.forEach(url => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                  <td>${url.id}</td>
+                  <td>${url.meta_description}</td>
+                  <td>${url.title}</td>
+                  <td>${url.url}</td>
+
+              `;
+              tableBody.appendChild(row);
+          });
+
+          // Initialize DataTables after rows are added
+          $('#metaDescTable').DataTable({
+            
+          });
+      })
+      .catch(err => console.error(err));
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </html>
