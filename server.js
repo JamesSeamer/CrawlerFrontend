@@ -43,7 +43,7 @@ app.get("/get_links", async (req, res) => {
 
 app.get("/get_internal404s", async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM seo_crawls.url LEFT JOIN seo_crawls.crawls ON seo_crawls.crawls.id = seo_crawls.url.crawl_id WHERE seo_crawls.url.url LIKE CONCAT( '%' , REPLACE(SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING_INDEX(start_url, '://', -1),'/', 1),':', 1),'www.', ''), '%');");
+    const [rows] = await pool.query("SELECT * FROM seo_crawls.url WHERE seo_crawls.url.status_code LIKE '4%' AND seo_crawls.url.page_scope = 'internal';");
     res.json(rows);
   } catch (err) {
     console.error(err);
