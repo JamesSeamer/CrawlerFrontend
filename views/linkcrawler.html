@@ -30,7 +30,7 @@
 
     try {
       const response = await fetch(crawlEndpoint, {
-        method: 'POST' // or 'POST' depending on your server
+        method: 'GET'
       });
 
       if (!response.ok) throw new Error(`Server error: ${response.status}`);
