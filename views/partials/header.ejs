@@ -3,59 +3,73 @@
 <head>
     <title>Web Crawler</title>
     <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/bootstrap/dist/css/bootstrap.min.css">
 </head>
 <body>
-  <header>
-    <h1>Web Crawler</h1>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/4xx">4xx</a>
-      <a href="/images">Images</a>
-      <a href="/submit_crawl">Submit Crawl</a>
-      <a href="/meta">Meta</a>      
-    </nav>
-    <button id="openCrawlPopup" style="margin-left:20px;">
-        <% if (activeCrawlId) { 
-            const selectedCrawl = crawls.find(c => c.id === Number(activeCrawlId));
-        %>
-        Crawl: <%= selectedCrawl.start_url %>
-        <% } else { %>
-        Select Crawl
-        <% } %>
-    </button>
+    <header>
+        <h1>Web Crawler</h1>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">Dashboard</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+            </button>
 
-    <div id="crawlPopup" class="popup" style="display:none;">
-        <div class="popup-content">
-            <span id="closeCrawlPopup" style="cursor:pointer; float:right;">&times;</span>
-            <h2>Select a Crawl</h2>
-            <table>
-            <thead>
-                <tr>
-                <th>ID</th>
-                <th>Start URL</th>
-                <th>Start Time</th>
-                <th># URLs</th>
-                <th>Select</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% crawls.forEach(crawl => { %>
-                <tr>
-                    <td><%= crawl.id %></td>
-                    <td><%= crawl.start_url %></td>
-                    <td><%= crawl.start_time.toISOString().slice(0,19).replace('T',' ') %></td>
-                    <td><%= crawl.url_count %></td>
-                    <td>
-                    <form method="POST" action="/set-crawl">
-                        <input type="hidden" name="crawlId" value="<%= crawl.id %>">
-                        <button type="submit">Select</button>
-                    </form>
-                    </td>
-                </tr>
-                <% }) %>
-            </tbody>
-            </table>
+            <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="/4xx">4xx</a></li>
+                <li class="nav-item"><a class="nav-link" href="/images">Images</a></li>
+                <li class="nav-item"><a class="nav-link" href="/submit_crawl">Submit Crawl</a></li>
+                <li class="nav-item"><a class="nav-link" href="/meta">Meta</a></li>
+            </ul>
+            <button id="openCrawlPopup" class="btn btn-primary ms-auto">
+                <% if (activeCrawlId) { 
+                    const selectedCrawl = crawls.find(c => c.id === Number(activeCrawlId));
+                %>
+                Selected Crawl: <%= selectedCrawl.start_url %> (<%= selectedCrawl.start_time.toISOString().slice(0,19).replace('T',' ') %>)
+                <% } else { %>
+                Select Crawl
+                <% } %>
+            </button>
+            </div>
         </div>
-    </div>
-  </header>
-  <main>
+        </nav>
+
+
+
+        <div id="crawlPopup" class="popup" style="display:none;">
+            <div class="popup-content">
+                <span id="closeCrawlPopup" style="cursor:pointer; float:right;">&times;</span>
+                <h2>Select a Crawl</h2>
+                <table>
+                <thead>
+                    <tr>
+                    <th>ID</th>
+                    <th>Start URL</th>
+                    <th>Start Time</th>
+                    <th># URLs</th>
+                    <th>Select</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% crawls.forEach(crawl => { %>
+                    <tr>
+                        <td><%= crawl.id %></td>
+                        <td><%= crawl.start_url %></td>
+                        <td><%= crawl.start_time.toISOString().slice(0,19).replace('T',' ') %></td>
+                        <td><%= crawl.url_count %></td>
+                        <td>
+                        <form method="POST" action="/set-crawl">
+                            <input type="hidden" name="crawlId" value="<%= crawl.id %>">
+                            <button type="submit">Select</button>
+                        </form>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+                </table>
+            </div>
+        </div>
+    </header>
+    <main>
