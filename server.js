@@ -28,7 +28,7 @@ app.use(session({
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-
+app.use('/bootstrap', express.static(path.join(__dirname, 'node_modules/bootstrap')));
 app.use(express.urlencoded({ extended: true }));
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -61,16 +61,21 @@ app.get('/', (req, res) => {
 
 app.get('/4xx', async (req, res) => {
   const crawlId = req.session.activeCrawlId;
+  if (!crawlId) {
+    return res.render('pages/4xx', { internal404s: [], external404s: [], message: "No crawl selected" });
+  }
 
   try {
     // Internal 404s
     const [internal404s] = await pool.query(
-      "SELECT * FROM seo_crawls.url WHERE status_code LIKE '4%' AND page_scope = 'internal' AND crawl_id = " + crawlId + ";"
+      "SELECT * FROM seo_crawls.url WHERE status_code LIKE '4%' AND page_scope = 'internal' AND crawl_id = ?",
+      [crawlId]
     );
 
     // External 404s
     const [external404s] = await pool.query(
-      "SELECT * FROM seo_crawls.url WHERE status_code LIKE '4%' AND page_scope = 'external' AND crawl_id = " + crawlId + ";"
+      "SELECT * FROM seo_crawls.url WHERE status_code LIKE '4%' AND page_scope = 'external' AND crawl_id = ?",
+      [crawlId]
     );
 
     res.render('pages/4xx', {
@@ -86,11 +91,15 @@ app.get('/4xx', async (req, res) => {
 
 app.get('/images', async (req, res) => {
   const crawlId = req.session.activeCrawlId;
+  if (!crawlId) {
+    return res.render('pages/images', { images: [], message: "No crawl selected" });
+  }
+
   try {
     const [images] = await pool.query(
-      "SELECT * FROM seo_crawls.url WHERE content_type LIKE 'image/%' AND crawl_id = " + crawlId + ";"
+      "SELECT * FROM seo_crawls.url WHERE content_type LIKE 'image/%' AND crawl_id = ?",
+      [crawlId]
     );
-    console.log(crawlId);
     res.render('pages/images', { images });
   } catch (err) {
     console.error(err);
@@ -100,9 +109,14 @@ app.get('/images', async (req, res) => {
 
 app.get("/meta", async (req, res) => {
   const crawlId = req.session.activeCrawlId;
+  if (!crawlId) {
+    return res.render('pages/meta', { urls: [], message: "No crawl selected" });
+  }
+
   try {
     const [urls] = await pool.query(
-      "SELECT * FROM seo_crawls.url WHERE crawl_id = " + crawlId + ";"
+      "SELECT * FROM seo_crawls.url WHERE crawl_id  = ?",
+      [crawlId]
     );
     res.render("pages/meta", { urls });
   } catch (err) {
@@ -126,19 +140,9 @@ app.post('/set-crawl', async (req, res) => {
   res.redirect(req.headers.referer || '/'); // go back to previous page
 });
 
-
-
-
-
-
-
-
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "views", "index.html"));
 });
-
-
-
 
 const PORT = 4000;
 app.listen(PORT, () => {
