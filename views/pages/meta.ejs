@@ -1,0 +1,55 @@
+<%- include('../partials/header', { clients: [], activeClientId: null }) %>
+
+    <h1>Meta Data Table</h1>
+
+    <table id="metaTable" class="display">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Meta Description</th>
+                <th>Title</th>
+                <th>URL</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (urls && urls.length > 0) { %>
+                <% urls.forEach(url => { %>
+                    <tr>
+                        <td><%= url.id %></td>
+                        <td><%= url.meta_description %></td>
+                        <td><%= url.title %></td>
+                        <td><%= url.url %></td>
+                    </tr>
+                <% }) %>
+            <% } %>
+        </tbody>
+    </table>
+
+    <script>
+        $(document).ready(function() {
+            $('#metaTable').DataTable();
+        });
+
+        // Optional: Fetch additional data from /get_meta dynamically
+        /*
+        fetch("/get_meta")
+          .then(res => res.json())
+          .then(data => {
+              const tableBody = document.querySelector("#metaTable tbody");
+              data.forEach(url => {
+                  const row = document.createElement("tr");
+                  row.innerHTML = `
+                      <td>${url.id}</td>
+                      <td>${url.meta_description}</td>
+                      <td>${url.title}</td>
+                      <td>${url.url}</td>
+                  `;
+                  tableBody.appendChild(row);
+              });
+              $('#metaTable').DataTable();
+          })
+          .catch(err => console.error(err));
+        */
+    </script>
+
+<%- include('../partials/footer') %>

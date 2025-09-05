@@ -18,7 +18,17 @@ const path = require("path");
 
 const app = express();
 
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+app.use(express.urlencoded({ extended: true }));
+
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Routes
+app.get('/', (req, res) => {
+  res.render('pages/home');
+});
 
 app.get("/get_urls", async (req, res) => {
   try {
@@ -41,73 +51,70 @@ app.get("/get_links", async (req, res) => {
 });
 
 
-app.get("/get_internal404s", async (req, res) => {
+app.get('/4xx', async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM seo_crawls.url WHERE seo_crawls.url.status_code LIKE '4%' AND seo_crawls.url.page_scope = 'internal';");
-    res.json(rows);
+    // Internal 404s
+    const [internal404s] = await pool.query(
+      "SELECT * FROM seo_crawls.url WHERE status_code LIKE '4%' AND page_scope = 'internal';"
+    );
+
+    // External 404s
+    const [external404s] = await pool.query(
+      "SELECT * FROM seo_crawls.url WHERE status_code LIKE '4%' AND page_scope = 'external';"
+    );
+
+    res.render('pages/4xx', {
+      internal404s,
+      external404s
+    });
+
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Database query failed" });
+    res.status(500).send("Database query failed");
   }
 });
 
-app.get("/get_images", async (req, res) => {
+app.get('/images', async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM seo_crawls.url WHERE content_type LIKE 'image/%';");
-    res.json(rows);
+    const [images] = await pool.query(
+      "SELECT * FROM seo_crawls.url WHERE content_type LIKE 'image/%';"
+    );
+
+    res.render('pages/images', { images });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Database query failed" });
+    res.status(500).send("Database query failed");
   }
 });
 
-app.get("/get_meta", async (req, res) => {
+app.get("/meta", async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM seo_crawls.url LIMIT 10;");
-    res.json(rows);
+    const [urls] = await pool.query("SELECT * FROM seo_crawls.url LIMIT 10;");
+    res.render("pages/meta", { urls });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Database query failed" });
-  }
-});
-
-app.get("/get_external404s", async (req, res) => {
-  try {
-    const [rows] = await pool.query("SELECT * FROM seo_crawls.url LEFT JOIN seo_crawls.crawls ON seo_crawls.crawls.id = seo_crawls.url.crawl_id WHERE seo_crawls.url.url NOT LIKE CONCAT( '%' , REPLACE(SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING_INDEX(start_url, '://', -1),'/', 1),':', 1),'www.', ''), '%');");
-    res.json(rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Database query failed" });
+    res.status(500).send("Database query failed");
   }
 });
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-app.get("/:page", (req, res) => {
-  const page = req.params.page; // grabs whatever is after "/"
-  const filePath = path.join(__dirname, "views", `${page}.html`);
-
-  res.sendFile(filePath, (err) => {
-    if (err) {
-      res.status(404).send("Page not found");
-    }
-  });
+app.get('/submit_crawl', (req, res) => {
+  res.render('pages/submit_crawl');
 });
+
+
+
+
+// app.get("/:page", (req, res) => {
+//   const page = req.params.page; // grabs whatever is after "/"
+//   const filePath = path.join(__dirname, "views", `${page}.html`);
+
+//   res.sendFile(filePath, (err) => {
+//     if (err) {
+//       res.status(404).send("Page not found");
+//     }
+//   });
+// });
 
 
 

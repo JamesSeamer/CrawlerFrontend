@@ -1,0 +1,37 @@
+<%- include('../partials/header', { clients: [], activeClientId: null }) %>
+
+<h1>Images</h1>
+
+<table id="imageTable" class="display">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>URL</th>
+      <th>Status Code</th>
+      <th>Size</th>
+      <th>Alt Text</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% images.forEach(img => { %>
+      <tr>
+        <td><%= img.id %></td>
+        <td><a href="<%= img.url %>" target="_blank"><%= img.url %></a></td>
+        <td><%= img.status_code %></td>
+        <td><%= img.size %></td>
+        <td><%= img.alt_text %></td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+
+<!-- DataTables JS & jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="//cdn.datatables.net/2.3.3/js/dataTables.min.js"></script>
+<script>
+  $(document).ready(function() {
+    $('#imageTable').DataTable();
+  });
+</script>
+
+<%- include('../partials/footer') %>

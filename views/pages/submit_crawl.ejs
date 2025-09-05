@@ -1,0 +1,41 @@
+<%- include('../partials/header', { clients: [], activeClientId: null }) %>
+
+<h1>Link Crawler</h1>
+
+<form id="crawlForm">
+  <label for="url">URL to crawl:</label>
+  <input type="text" id="url" name="url" placeholder="Enter URL" required>
+  <button type="submit">Start Crawl</button>
+</form>
+
+<div id="status" style="margin-top: 10px;"></div>
+
+<script>
+  const form = document.getElementById('crawlForm');
+  const statusDiv = document.getElementById('status');
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault(); // prevent default navigation
+
+    const urlInput = document.getElementById('url').value;
+    const crawlEndpoint = `http://localhost:3000/start-crawl?crawl_url=${encodeURIComponent(urlInput)}`;
+
+    statusDiv.textContent = "Crawling in progress...";
+
+    try {
+      const response = await fetch(crawlEndpoint, { method: 'GET' });
+
+      if (!response.ok) throw new Error(`Server error: ${response.status}`);
+
+      const result = await response.text(); // adjust if server returns JSON
+      statusDiv.textContent = "Crawl completed!";
+      console.log("Crawl result:", result);
+
+    } catch (err) {
+      statusDiv.textContent = "Error during crawl.";
+      console.error(err);
+    }
+  });
+</script>
+
+<%- include('../partials/footer') %>
