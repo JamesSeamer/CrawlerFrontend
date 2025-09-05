@@ -42,3 +42,28 @@ tr:nth-child(even){
       background-color: #111111;
     }
 
+/* Crawl Selecter Popup */
+.popup {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex; justify-content: center; align-items: center;
+  z-index: 999;
+}
+.popup-content {
+  background: white;
+  padding: 20px;
+  border-radius: 5px;
+  max-height: 80vh;
+  overflow-y: auto;
+  width: 700px;
+}
+.popup-content table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.popup-content th, .popup-content td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
