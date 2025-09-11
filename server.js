@@ -299,10 +299,17 @@ app.get('/redirect_chains', async (req, res) => {
 });
 
 
-app.get('/submit_crawl', (req, res) => {
-  res.render('pages/submit_crawl');
+app.get('/submit_crawl', async (req, res) => {
+  try {
+    const [clients] = await pool.query(
+      'SELECT client_id, client_name, client_url FROM seo_crawls.clients ORDER BY client_name'
+    );
+    res.render('pages/submit_crawl', { clients, message: null });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Failed to load clients');
+  }
 });
-
 //for crawl selector
 app.post('/set-crawl', async (req, res) => {
   const { crawlId } = req.body;
@@ -321,12 +328,6 @@ const PORT = 4000;
 app.listen(PORT, () => {
   console.log(`✅ API running at http://localhost:${PORT}`);
 });
-
-
-
-
-
-
 
 app.get('/client', async (req, res) => {
   try {
