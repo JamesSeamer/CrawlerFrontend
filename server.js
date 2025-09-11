@@ -113,39 +113,36 @@ app.get("/meta", async (req, res) => {
 
   if (!crawlId) {
     return res.render("pages/meta", {
-      over80: [],
-      under30: [],
-      missing: [],
-      duplicates: [],
+      // titles
+      over80: [], under30: [], missing: [], duplicates: [],
+      // descriptions
+      over300desc: [], under150desc: [], missingdesc: [], duplicatedesc: [],
       message: "No crawl selected"
     });
   }
 
   try {
     const [rows] = await pool.query(
-      `SELECT id, url, title
-       FROM seo_crawls.url
-       WHERE crawl_id = ?`,
+      `SELECT id, url, title, meta_description
+         FROM seo_crawls.url
+        WHERE crawl_id = ?`,
       [crawlId]
     );
 
-    const trim = (s) => (s || "").toString().trim();
-    const safeLen = (s) => trim(s).length;
+    const trim = (s) => (s ?? "").toString().trim();
 
-    const over80   = [];
-    const under30  = [];
-    const missing  = [];
-    const titleMap = new Map();
-    //key = normalized title, value = array of rows
+    // ----- Title buckets -----
+    const over80 = [], under30 = [], missing = [];
+    const titleMap = new Map(); // key = normalized title, val = [{id,url,title}]
 
     for (const r of rows) {
       const t = trim(r.title);
       const len = t.length;
 
       if (len === 0) {
-        missing.push(r);//no title
+        missing.push(r);
       } else {
-        if (len > 80) over80.push(r);//length check 
+        if (len > 80) over80.push(r);
         if (len < 30) under30.push(r);
 
         const key = t.toLowerCase();
@@ -155,9 +152,8 @@ app.get("/meta", async (req, res) => {
     }
 
     const duplicates = [];
-    for (const [_, list] of titleMap.entries()) {
+    for (const [, list] of titleMap) {
       if (list.length > 1) {
-        // Use the first item's title as the display title (original casing)
         duplicates.push({
           title: list[0].title,
           pages: list.map(p => ({ id: p.id, url: p.url }))
@@ -165,16 +161,52 @@ app.get("/meta", async (req, res) => {
       }
     }
 
-    //sorts order
+    // ----- Description buckets -----
+    const over300desc = [], under150desc = [], missingdesc = [];
+    const descMap = new Map(); // key = normalized description, val = [{id,url,description}]
+
+    for (const r of rows) {
+      const d = trim(r.meta_description);
+      const dlen = d.length;
+
+      if (dlen === 0) {
+        missingdesc.push(r);
+      } else {
+        if (dlen > 300) over300desc.push(r);
+        if (dlen < 150) under150desc.push(r);
+
+        const key = d.toLowerCase();
+        if (!descMap.has(key)) descMap.set(key, []);
+        descMap.get(key).push({ id: r.id, url: r.url, description: d });
+      }
+    }
+
+    const duplicatedesc = [];
+    for (const [, list] of descMap) {
+      if (list.length > 1) {
+        duplicatedesc.push({
+          description: list[0].description,
+          pages: list.map(p => ({ id: p.id, url: p.url }))
+        });
+      }
+    }
+
+    //sorts
     over80.sort((a,b) => a.title.localeCompare(b.title));
     under30.sort((a,b) => a.title.localeCompare(b.title));
     missing.sort((a,b) => a.url.localeCompare(b.url));
     duplicates.sort((a,b) => a.title.localeCompare(b.title));
+
+    over300desc.sort((a,b) => trim(b.meta_description).length - trim(a.meta_description).length);
+    under150desc.sort((a,b) => trim(a.meta_description).length - trim(b.meta_description).length);
+    missingdesc.sort((a,b) => a.url.localeCompare(b.url));
+    duplicatedesc.sort((a,b) => a.description.localeCompare(b.description));
+
     res.render("pages/meta", {
-      over80,
-      under30,
-      missing,
-      duplicates,
+      //title
+      over80, under30, missing, duplicates,
+      //descriptions
+      over300desc, under150desc, missingdesc, duplicatedesc,
       message: null
     });
   } catch (err) {
@@ -190,7 +222,7 @@ app.get('/redirect_chains', async (req, res) => {
   }
 
   try {
-    // 1️⃣ Fetch all URLs in the crawl
+    //fetch urls
     const [urls] = await pool.query(
       "SELECT id, url, status_code FROM url WHERE crawl_id = ?",
       [crawlId]
@@ -201,7 +233,7 @@ app.get('/redirect_chains', async (req, res) => {
       urlMap[u.url] = { id: u.id, status_code: u.status_code };
     });
 
-    // 2️⃣ Fetch all links in the crawl
+    //fetch links
     const [links] = await pool.query(
       "SELECT from_page_id, to_url FROM links WHERE crawl_id = ?",
       [crawlId]
@@ -213,11 +245,11 @@ app.get('/redirect_chains', async (req, res) => {
       linksMap[l.from_page_id].push(l.to_url);
     });
 
-    // 3️⃣ Compute redirect chains iteratively
+  
     const redirects = [];
 
     urls.forEach(u => {
-      // Only start from non-redirect pages
+      //start for non redirect pages
       if (u.status_code && ![301, 302].includes(u.status_code)) {
         const fromPageUrl = u.url;
         const chains = [];
@@ -234,10 +266,10 @@ app.get('/redirect_chains', async (req, res) => {
             chain.push(current);
 
             const info = urlMap[current];
-            if (!info || ![301,302].includes(info.status_code)) break; // stop at non-redirect
-            // follow the redirect
+            if (!info || ![301,302].includes(info.status_code)) break; //stop at none redirect
+            //follows the redirect
             const nextLinks = linksMap[info.id] || [];
-            current = nextLinks[0]; // follow first link in chain
+            current = nextLinks[0]; //follow first link in chain
           }
 
           if (chain.length > 0) {
@@ -245,7 +277,7 @@ app.get('/redirect_chains', async (req, res) => {
           }
         });
 
-        // Flatten chains for table
+        //flatten chain
         chains.forEach(chain => {
           if (chain.length > 2) { 
             const row = { start_url: fromPageUrl, number_of_redirects: chain.length };
@@ -270,14 +302,14 @@ app.get('/submit_crawl', (req, res) => {
   res.render('pages/submit_crawl');
 });
 
-// For crawl selector
+//for crawl selector
 app.post('/set-crawl', async (req, res) => {
   const { crawlId } = req.body;
 
-  // Store selected crawl in session
+  //stores session
   req.session.activeCrawlId = crawlId;
 
-  res.redirect(req.headers.referer || '/'); // go back to previous page
+  res.redirect(req.headers.referer || '/'); //go back to previous page
 });
 
 app.get("/", (req, res) => {
