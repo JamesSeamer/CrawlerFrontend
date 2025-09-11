@@ -1,55 +1,104 @@
 <%- include('../partials/header', { clients: [], activeClientId: null }) %>
 
 <h1>404 Errors</h1>
+<% if (message) { %>
+  <div class="alert alert-warning"><%= message %></div>
+<% } %>
 
-<h2>Internal 404s</h2>
-<table id="Internal404sTable" class="display">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>URL</th>
-      <th>Content Type</th>
-      <th>Title</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% internal404s.forEach(url => { %>
-      <tr>
-        <td><%= url.id %></td>
-        <td><a href="<%= url.url %>" target="_blank"><%= url.url %></a></td>
-        <td><%= url.content_type %></td>
-        <td><%= url.title %></td>
-      </tr>
-    <% }) %>
-  </tbody>
-</table>
+<!-- Nav Tabs -->
+<ul class="nav nav-tabs" role="tablist" style="margin-bottom:1rem;">
+  <li class="nav-item">
+    <a class="nav-link active" data-bs-toggle="tab" href="#internal404s" role="tab">
+      Internal 404s (<%= internal404s.length %>)
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" data-bs-toggle="tab" href="#external404s" role="tab">
+      External 404s (<%= external404s.length %>)
+    </a>
+  </li>
+</ul>
 
-<h2>External 404s</h2>
-<table id="External404sTable" class="display">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>URL</th>
-      <th>Content Type</th>
-      <th>Title</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% external404s.forEach(url => { %>
-      <tr>
-        <td><%= url.id %></td>
-        <td><a href="<%= url.url %>" target="_blank"><%= url.url %></a></td>
-        <td><%= url.content_type %></td>
-        <td><%= url.title %></td>
-      </tr>
-    <% }) %>
-  </tbody>
-</table>
+<!-- Tab Content -->
+<div class="tab-content">
 
+  <!-- Internal 404s -->
+  <div class="tab-pane fade show active" id="internal404s" role="tabpanel">
+    <table id="Internal404sTable" class="table table-striped table-bordered table-hover" style="width:100%">
+      <thead class="table-primary">
+        <tr>
+          <th>ID</th>
+          <th>URL</th>
+          <th>Content Type</th>
+          <th>Title</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% internal404s.forEach(url => { %>
+          <tr>
+            <td><%= url.id %></td>
+            <td><a href="<%= url.url %>" target="_blank"><%= url.url %></a></td>
+            <td><%= url.content_type %></td>
+            <td><%= url.title %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- External 404s -->
+  <div class="tab-pane fade" id="external404s" role="tabpanel">
+    <table id="External404sTable" class="table table-striped table-bordered table-hover" style="width:100%">
+      <thead class="custom-header">
+        <tr>
+          <th>ID</th>
+          <th>URL</th>
+          <th>Content Type</th>
+          <th>Title</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% external404s.forEach(url => { %>
+          <tr>
+            <td><%= url.id %></td>
+            <td><a href="<%= url.url %>" target="_blank"><%= url.url %></a></td>
+            <td><%= url.content_type %></td>
+            <td><%= url.title %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- DataTables init -->
 <script>
-  $(document).ready(function() {
-    $('#Internal404sTable').DataTable();
-    $('#External404sTable').DataTable();
+  $(document).ready(function () {
+    const opts = {
+      responsive: true,
+      pageLength: 10,
+      layout: {
+        topStart: 'pageLength', // entries per page left
+        topEnd:   'search',     // search bar right
+        bottomStart: 'info',
+        bottomEnd:   'paging'
+      },
+      language: {
+        searchPlaceholder: 'Search…',
+        search: '' // remove "Search:" label
+      }
+    };
+
+    $('#Internal404sTable').DataTable(opts);
+    $('#External404sTable').DataTable(opts);
+
+    // Fix column widths when switching tabs
+    $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function () {
+      $.fn.dataTable.tables({visible: true, api: true})
+        .columns.adjust()
+        .responsive.recalc();
+    });
   });
 </script>
 

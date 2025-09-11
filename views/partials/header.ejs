@@ -4,23 +4,25 @@
     <title>Web Crawler</title>
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/bootstrap/dist/css/bootstrap.min.css">
+    <!-- DataTables Bootstrap 5 CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.3/css/dataTables.bootstrap5.min.css">
+
         <!-- DataTables JS & jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="//cdn.datatables.net/2.3.3/js/dataTables.min.js"></script>
 </head>
 <body>
     <header>
-        <h1>Web Crawler</h1>
+
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/">Dashboard</a>
+            <a class="navbar-brand" href="/">Web Crawler</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
             </button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
                 <li class="nav-item"><a class="nav-link" href="/4xx">4xx</a></li>
                 <li class="nav-item"><a class="nav-link" href="/images">Images</a></li>
                 <li class="nav-item"><a class="nav-link" href="/submit_crawl">Submit Crawl</a></li>
@@ -47,37 +49,44 @@
 
 
         <div id="crawlPopup" class="popup" style="display:none;">
-            <div class="popup-content">
-                <span id="closeCrawlPopup" style="cursor:pointer; float:right;">&times;</span>
-                <h2>Select a Crawl</h2>
-                <table>
-                <thead>
-                    <tr>
-                    <th>ID</th>
-                    <th>Start URL</th>
-                    <th>Start Time</th>
-                    <th># URLs</th>
-                    <th>Select</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% crawls.forEach(crawl => { %>
-                    <tr>
-                        <td><%= crawl.id %></td>
-                        <td><%= crawl.start_url %></td>
-                        <td><%= crawl.start_time.toISOString().slice(0,19).replace('T',' ') %></td>
-                        <td><%= crawl.url_count %></td>
-                        <td>
-                        <form method="POST" action="/set-crawl">
-                            <input type="hidden" name="crawlId" value="<%= crawl.id %>">
-                            <button type="submit">Select</button>
-                        </form>
-                        </td>
-                    </tr>
-                    <% }) %>
-                </tbody>
-                </table>
+        <div class="popup-content">
+            <span id="closeCrawlPopup" style="cursor:pointer; float:right;">&times;</span>
+            <h2>Select a Crawl</h2>
+
+            <!-- Search -->
+            <div class="input-group mb-3">
+            <span class="input-group-text">Search</span>
+            <input id="crawlSearch" type="text" class="form-control" placeholder="Filter by Crawl ID or Start URL">
             </div>
+
+            <table id="crawlTable" class="table table-bordered table-striped table-sm" style="width:100%">
+            <thead>
+                <tr>
+                <th>ID</th>
+                <th>Start URL</th>
+                <th>Start Time</th>
+                <th># URLs</th>
+                <th>Select</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% crawls.forEach(crawl => { %>
+                <tr>
+                    <td><%= crawl.id %></td>
+                    <td><%= crawl.start_url %></td>
+                    <td><%= crawl.start_time.toISOString().slice(0,19).replace('T',' ') %></td>
+                    <td><%= crawl.url_count %></td>
+                    <td>
+                    <form method="POST" action="/set-crawl">
+                        <input type="hidden" name="crawlId" value="<%= crawl.id %>">
+                        <button type="submit" class="btn btn-sm btn-primary">Select</button>
+                    </form>
+                    </td>
+                </tr>
+                <% }) %>
+            </tbody>
+            </table>
+        </div>
         </div>
     </header>
     <main>

@@ -1,36 +1,134 @@
-<%- include('../partials/header', { clients: [], activeClientId: null }) %>
+<%- include('../partials/header', { clients: [], activeClientId: activeCrawlId || null }) %>
 
-    <h1>Meta Data Table</h1>
+<h1>Meta Title Checks</h1>
+<% if (message) { %>
+  <div class="alert alert-warning"><%= message %></div>
+<% } %>
 
-    <table id="metaTable" class="display">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Meta Description</th>
-                <th>Title</th>
-                <th>URL</th>
-            </tr>
-        </thead>
-        <tbody>
-            <% if (urls && urls.length > 0) { %>
-                <% urls.forEach(url => { %>
-                    <tr>
-                        <td><%= url.id %></td>
-                        <td><%= url.meta_description %></td>
-                        <td><%= url.title %></td>
-                        <td><%= url.url %></td>
-                    </tr>
-                <% }) %>
-            <% } %>
-        </tbody>
+<ul class="nav nav-tabs" role="tablist" style="margin-bottom:1rem;">
+  <li class="nav-item">
+    <a class="nav-link active" data-bs-toggle="tab" href="#over80" role="tab">> 80 characters (<%= over80.length %>)</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" data-bs-toggle="tab" href="#under30" role="tab">< 30 characters (<%= under30.length %>)</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" data-bs-toggle="tab" href="#missing" role="tab">Missing Title (<%= missing.length %>)</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" data-bs-toggle="tab" href="#duplicates" role="tab">Duplicate Title (<%= duplicates.length %>)</a>
+  </li>
+</ul>
+
+<div class="tab-content">
+
+  <!-- Over 80 -->
+  <div class="tab-pane fade show active" id="over80" role="tabpanel">
+    <table id="tblOver80" class="table table-striped table-bordered table-hover">
+      <thead class="table-primary">
+        <tr>
+          <th>ID</th>
+          <th>Title</th>
+          <th>URL</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% over80.forEach(r => { %>
+          <tr>
+            <td><%= r.id %></td>
+            <td><%= (r.title||'') %> (<%= (r.title||'').trim().length %>)</td>
+            <td><a href="<%= r.url %>" target="_blank" rel="noopener"><%= r.url %></a></td>
+          </tr>
+        <% }) %>
+      </tbody>
     </table>
+  </div>
 
-    <script>
-        $(document).ready(function() {
-            $('#metaTable').DataTable();
-        });
+  <!-- Under 30 -->
+  <div class="tab-pane fade" id="under30" role="tabpanel">
+    <table id="tblUnder30" class="table table-striped table-bordered table-hover">
+      <thead class="table-primary">
+        <tr>
+          <th>ID</th>
+          <th>Title (length)</th>
+          <th>URL</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% under30.forEach(r => { %>
+          <tr>
+            <td><%= r.id %></td>
+            <td><%= (r.title||'') %> (<%= (r.title||'').trim().length %>)</td>
+            <td><a href="<%= r.url %>" target="_blank" rel="noopener"><%= r.url %></a></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
 
-        
-    </script>
+  <!-- Missing -->
+  <div class="tab-pane fade" id="missing" role="tabpanel">
+    <table id="tblMissing" class="table table-striped table-bordered table-hover">
+      <thead class="table-primary">
+        <tr>
+          <th>ID</th>
+          <th>URL</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% missing.forEach(r => { %>
+          <tr>
+            <td><%= r.id %></td>
+            <td><a href="<%= r.url %>" target="_blank" rel="noopener"><%= r.url %></a></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Duplicates -->
+  <div class="tab-pane fade" id="duplicates" role="tabpanel">
+    <table id="tblDuplicates" class="table table-striped table-bordered table-hover">
+      <thead class="table-primary">
+        <tr>
+          <th>Title</th>
+          <th>Count</th>
+          <th>Pages</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% duplicates.forEach(group => { %>
+          <tr>
+            <td><%= group.title %></td>
+            <td><%= group.pages.length %></td>
+            <td>
+              <ul style="margin:0; padding-left:1rem;">
+                <% group.pages.forEach(p => { %>
+                  <li>
+                    <strong><%= p.id %></strong> — 
+                    <a href="<%= p.url %>" target="_blank" rel="noopener"><%= p.url %></a>
+                  </li>
+                <% }) %>
+              </ul>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+  $(document).ready(function () {
+    $('#tblOver80').DataTable();
+    $('#tblUnder30').DataTable();
+    $('#tblMissing').DataTable();
+    $('#tblDuplicates').DataTable({
+      pageLength: 25,
+      order: [[1, 'desc']]
+    });
+  });
+</script>
 
 <%- include('../partials/footer') %>

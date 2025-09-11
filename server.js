@@ -80,7 +80,8 @@ app.get('/4xx', async (req, res) => {
 
     res.render('pages/4xx', {
       internal404s,
-      external404s
+      external404s,
+      message: null
     });
 
   } catch (err) {
@@ -109,16 +110,73 @@ app.get('/images', async (req, res) => {
 
 app.get("/meta", async (req, res) => {
   const crawlId = req.session.activeCrawlId;
+
   if (!crawlId) {
-    return res.render('pages/meta', { urls: [], message: "No crawl selected" });
+    return res.render("pages/meta", {
+      over80: [],
+      under30: [],
+      missing: [],
+      duplicates: [],
+      message: "No crawl selected"
+    });
   }
 
   try {
-    const [urls] = await pool.query(
-      "SELECT * FROM seo_crawls.url WHERE crawl_id  = ?",
+    const [rows] = await pool.query(
+      `SELECT id, url, title
+       FROM seo_crawls.url
+       WHERE crawl_id = ?`,
       [crawlId]
     );
-    res.render("pages/meta", { urls });
+
+    const trim = (s) => (s || "").toString().trim();
+    const safeLen = (s) => trim(s).length;
+
+    const over80   = [];
+    const under30  = [];
+    const missing  = [];
+    const titleMap = new Map();
+    //key = normalized title, value = array of rows
+
+    for (const r of rows) {
+      const t = trim(r.title);
+      const len = t.length;
+
+      if (len === 0) {
+        missing.push(r);//no title
+      } else {
+        if (len > 80) over80.push(r);//length check 
+        if (len < 30) under30.push(r);
+
+        const key = t.toLowerCase();
+        if (!titleMap.has(key)) titleMap.set(key, []);
+        titleMap.get(key).push({ id: r.id, url: r.url, title: t });
+      }
+    }
+
+    const duplicates = [];
+    for (const [_, list] of titleMap.entries()) {
+      if (list.length > 1) {
+        // Use the first item's title as the display title (original casing)
+        duplicates.push({
+          title: list[0].title,
+          pages: list.map(p => ({ id: p.id, url: p.url }))
+        });
+      }
+    }
+
+    //sorts order
+    over80.sort((a,b) => a.title.localeCompare(b.title));
+    under30.sort((a,b) => a.title.localeCompare(b.title));
+    missing.sort((a,b) => a.url.localeCompare(b.url));
+    duplicates.sort((a,b) => a.title.localeCompare(b.title));
+    res.render("pages/meta", {
+      over80,
+      under30,
+      missing,
+      duplicates,
+      message: null
+    });
   } catch (err) {
     console.error(err);
     res.status(500).send("Database query failed");

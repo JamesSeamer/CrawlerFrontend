@@ -1,5 +1,5 @@
 :root{
-    --colour_1: #fb4136;
+    --colour_1: #1e8c1e;
 }
 
 th{
@@ -34,4 +34,33 @@ tr:nth-child(even){
   border: 1px solid #ccc;
   padding: 8px;
   text-align: left;
+}
+.table-primary th { 
+  color: #0b284f;
+  background-color: #1e8c1e;
+   --bs-table-color: #fff;                
+  --bs-table-bg: var(--colour_1);
+  --bs-table-border-color: var(--colour_1) ;
+  --bs-table-striped-bg: color-mix(in srgb, var(--colour_1) 90%, #000);
+  --bs-table-striped-color: #fff;
+  --bs-table-active-bg: color-mix(in srgb, var(--colour_1) 80%, #000);
+  --bs-table-active-color: #fff;
+  --bs-table-hover-bg: color-mix(in srgb, var(--colour_1) 85%, #000);
+  --bs-table-hover-color: #fff;
+ }
+
+  .btn-primary {
+  --bs-btn-bg: var(--colour_1) !important;
+  --bs-btn-border-color: var(--colour_1) !important;
+  --bs-btn-hover-bg: var(--colour_1) !important;   
+  --bs-btn-hover-border-color: var(--colour_1) !important;
+  --bs-btn-active-bg: var(--colour_1) !important;
+  --bs-btn-active-border-color: var(--colour_1) !important;
+}
+.dt-layout-cell.dt-layout-end{
+    margin-bottom: 5px;
+}
+.dt-length , .dt-layout-cell.dt-layout-end{
+  margin-left: 10px;
+  margin-right: 10px;
 }
