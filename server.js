@@ -107,9 +107,7 @@ app.get('/images', async (req, res) => {
     res.status(500).send("Database query failed");
   }
 });
-app.get('/client', (req, res) => {
-  res.render('pages/client', { message: null });
-});
+
 
 app.get("/meta", async (req, res) => {
   const crawlId = req.session.activeCrawlId;
@@ -324,3 +322,104 @@ app.listen(PORT, () => {
   console.log(`✅ API running at http://localhost:${PORT}`);
 });
 
+
+
+
+
+
+
+app.get('/client', async (req, res) => {
+  try {
+    const [clients] = await pool.query(
+      'SELECT client_id, client_name FROM seo_crawls.clients ORDER BY client_name'
+    );
+    res.render('pages/client', {
+      clients,
+      flash: req.query.updated ? 'Client updated.' : (req.query.deleted ? 'Client deleted.' : null)
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).send('Failed to load clients');
+  }
+});
+
+// List page
+app.get('/clients', async (req, res) => {
+  try {
+    const [clients] = await pool.query(
+      'SELECT client_id, client_name FROM seo_crawls.clients ORDER BY client_name'
+    );
+    res.render('pages/clients', {
+      clients,
+      flash: req.query.updated ? 'Client updated.' : (req.query.deleted ? 'Client deleted.' : null)
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).send('Failed to load clients');
+  }
+});
+
+// Page
+app.get('/client', async (req, res) => {
+  try {
+    const [clients] = await pool.query(
+      'SELECT client_id, client_name FROM seo_crawls.clients ORDER BY client_name'
+    );
+    const flash =
+      req.query.created ? 'Client created.' :
+      req.query.updated ? 'Client updated.' :
+      req.query.deleted ? 'Client deleted.' : null;
+
+    res.render('pages/client', { clients, flash });
+  } catch (e) {
+    console.error(e);
+    res.status(500).send('Failed to load clients');
+  }
+});
+
+// Single client (AJAX)
+app.get('/clients/:id.json', async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      'SELECT client_id, client_name, client_url, sitemap_url FROM seo_crawls.clients WHERE client_id = ?',
+      [req.params.id]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Not found' });
+    res.json(rows[0]);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Query failed' });
+  }
+});
+
+// Create / Update / Delete (single button)
+app.post('/clients/save', async (req, res) => {
+  const { client_id, client_name, client_url, sitemap_url, delete_flag } = req.body;
+  try {
+    if (delete_flag && client_id) {
+      await pool.query('DELETE FROM seo_crawls.clients WHERE client_id = ?', [client_id]);
+      return res.redirect('/client?deleted=1');
+    }
+
+    if (!client_id) {
+      // CREATE
+      await pool.query(
+        'INSERT INTO seo_crawls.clients (client_name, client_url, sitemap_url) VALUES (?, ?, ?)',
+        [client_name, client_url, sitemap_url || null]
+      );
+      return res.redirect('/client?created=1');
+    }
+
+    // UPDATE
+    await pool.query(
+      'UPDATE seo_crawls.clients SET client_name = ?, client_url = ?, sitemap_url = ? WHERE client_id = ?',
+      [client_name, client_url, sitemap_url || null, client_id]
+    );
+    return res.redirect('/client?updated=1');
+
+  } catch (e) {
+    console.error(e);
+    // Optional: detect duplicate name (ER_DUP_ENTRY 1062)
+    return res.status(500).send('Save failed');
+  }
+});

@@ -1,3 +1,107 @@
-<%- include('../partials/header', { clients: [], activeClientId: activeCrawlId || null }) %>
-<h1>Test Page</h1>
+<%- include('../partials/header', { clients: [], activeClientId: null }) %>
+
+<h1>Clients</h1>
+<% if (typeof flash !== 'undefined' && flash) { %>
+  <div class="alert alert-success"><%= flash %></div>
+<% } %>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <div class="mb-3">
+      <label for="clientSelect" class="form-label">Select client</label>
+      <select id="clientSelect" class="form-select">
+        <option value="">— Choose —</option>
+        <option value="__new__">+ New client</option>
+        <% (clients || []).forEach(c => { %>
+          <option value="<%= c.client_id %>"><%= c.client_name %></option>
+        <% }) %>
+      </select>
+    </div>
+
+    <form id="clientForm" method="POST" action="/clients/save">
+      <input type="hidden" name="client_id" id="client_id">
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Client name</label>
+          <input type="text" class="form-control" name="client_name" id="client_name" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Client URL</label>
+          <input type="url" class="form-control" name="client_url" id="client_url" required>
+        </div>
+        <div class="col-md-12">
+          <label class="form-label">Sitemap URL (optional)</label>
+          <input type="url" class="form-control" name="sitemap_url" id="sitemap_url">
+        </div>
+      </div>
+
+      <div class="d-flex align-items-center justify-content-between mt-3">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="delete_flag" name="delete_flag" value="1">
+          <label class="form-check-label text-danger" for="delete_flag">
+            Delete this client
+          </label>
+        </div>
+        <button type="submit" id="saveBtn" class="btn btn-primary">Update</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function clearForm() {
+    $('#client_id').val('');
+    $('#client_name').val('');
+    $('#client_url').val('');
+    $('#sitemap_url').val('');
+    $('#delete_flag').prop('checked', false).prop('disabled', true);
+    $('#saveBtn').text('Create');
+  }
+
+  function enableUpdateMode() {
+    $('#delete_flag').prop('disabled', false);
+    $('#saveBtn').text('Update');
+  }
+
+  $('#clientSelect').on('change', async function () {
+    const id = this.value;
+    if (!id) {
+      // nothing selected
+      clearForm();
+      $('#saveBtn').text('Update'); // neutral
+      $('#delete_flag').prop('disabled', true);
+      return;
+    }
+    if (id === '__new__') {
+      clearForm();
+      return;
+    }
+    // existing client
+    try {
+      const res = await fetch(`/clients/${id}.json`);
+      if (!res.ok) throw new Error('Fetch failed');
+      const c = await res.json();
+      $('#client_id').val(c.client_id);
+      $('#client_name').val(c.client_name || '');
+      $('#client_url').val(c.client_url || '');
+      $('#sitemap_url').val(c.sitemap_url || '');
+      enableUpdateMode();
+    } catch (e) {
+      console.error(e);
+      alert('Failed to load client');
+    }
+  });
+
+  // Confirm delete if checkbox ticked
+  $('#clientForm').on('submit', function (e) {
+    if ($('#delete_flag').is(':checked')) {
+      if (!confirm('Delete this client? This cannot be undone.')) e.preventDefault();
+    }
+  });
+
+  // Initial state: treat as "new" until a client is chosen
+  clearForm();
+</script>
+
 <%- include('../partials/footer') %>

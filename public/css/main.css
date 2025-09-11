@@ -64,3 +64,7 @@ tr:nth-child(even){
   margin-left: 10px;
   margin-right: 10px;
 }
+#clientSelect option[value="__new__"] {
+  color: var(--colour_1);
+  font-weight: 700;
+}
