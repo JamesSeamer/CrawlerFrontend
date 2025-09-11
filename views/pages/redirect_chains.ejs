@@ -1,0 +1,53 @@
+<%- include('../partials/header', { clients: [], activeClientId: null }) %>
+
+<h1>Redirect Chains</h1>
+
+<% if (redirects.length === 0) { %>
+  <p>No redirects found for this crawl.</p>
+<% } else { %>
+  <table id="redirectTable" class="display">
+    <thead>
+      <tr>
+        <th>Start URL</th>
+        <th>Number of Redirects</th>
+        <% 
+          // Dynamically get the URL columns and sort numerically
+          const urlCols = Object.keys(redirects[0])
+            .filter(k => k.startsWith('URL_'))
+            .sort((a, b) => {
+              const aNum = parseInt(a.split('_')[1]);
+              const bNum = parseInt(b.split('_')[1]);
+              return aNum - bNum;
+            });
+          urlCols.forEach(col => { %>
+            <th><%= col %></th>
+        <% }) %>
+      </tr>
+    </thead>
+    <tbody>
+      <% redirects.forEach(rc => { %>
+        <tr>
+          <td><a href="<%= rc.start_url %>" target="_blank"><%= rc.start_url %></a></td>
+          <td><%= rc.Number_of_Redirects || rc.number_of_redirects %></td>
+          <% urlCols.forEach(col => { %>
+            <td>
+              <% if (rc[col]) { %>
+                <a href="<%= rc[col] %>" target="_blank"><%= rc[col] %></a>
+              <% } %>
+            </td>
+          <% }) %>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+<% } %>
+
+<script>
+  $(document).ready(function() {
+    $('#redirectTable').DataTable({
+      "order": [[1, "desc"]]
+    });
+  });
+</script>
+
+<%- include('../partials/footer') %>

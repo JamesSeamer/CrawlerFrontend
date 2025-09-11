@@ -25,12 +25,17 @@
                 <li class="nav-item"><a class="nav-link" href="/images">Images</a></li>
                 <li class="nav-item"><a class="nav-link" href="/submit_crawl">Submit Crawl</a></li>
                 <li class="nav-item"><a class="nav-link" href="/meta">Meta</a></li>
+                <li class="nav-item"><a class="nav-link" href="/redirect_chains">Redirect Chains</a></li>
             </ul>
             <button id="openCrawlPopup" class="btn btn-primary ms-auto">
                 <% if (activeCrawlId) { 
-                    const selectedCrawl = crawls.find(c => c.id === Number(activeCrawlId));
+                    const selectedCrawl = crawls.find(c => c.id == activeCrawlId);
                 %>
-                Selected Crawl: <%= selectedCrawl.start_url %> (<%= selectedCrawl.start_time.toISOString().slice(0,19).replace('T',' ') %>)
+                <% if (selectedCrawl) { %>
+                    Selected Crawl: <%= selectedCrawl.start_url %> (<%= selectedCrawl.start_time.toISOString().slice(0,19).replace('T',' ') %>)
+                <% } else { %>
+                    Crawl not found
+                <% } %>
                 <% } else { %>
                 Select Crawl
                 <% } %>

@@ -125,6 +125,88 @@ app.get("/meta", async (req, res) => {
   }
 });
 
+app.get('/redirect_chains', async (req, res) => {
+  const crawlId = req.session.activeCrawlId;
+  if (!crawlId) {
+    return res.render('pages/redirect_chains', { redirects: [], message: "No crawl selected" });
+  }
+
+  try {
+    // 1️⃣ Fetch all URLs in the crawl
+    const [urls] = await pool.query(
+      "SELECT id, url, status_code FROM url WHERE crawl_id = ?",
+      [crawlId]
+    );
+
+    const urlMap = {};
+    urls.forEach(u => {
+      urlMap[u.url] = { id: u.id, status_code: u.status_code };
+    });
+
+    // 2️⃣ Fetch all links in the crawl
+    const [links] = await pool.query(
+      "SELECT from_page_id, to_url FROM links WHERE crawl_id = ?",
+      [crawlId]
+    );
+
+    const linksMap = {};
+    links.forEach(l => {
+      if (!linksMap[l.from_page_id]) linksMap[l.from_page_id] = [];
+      linksMap[l.from_page_id].push(l.to_url);
+    });
+
+    // 3️⃣ Compute redirect chains iteratively
+    const redirects = [];
+
+    urls.forEach(u => {
+      // Only start from non-redirect pages
+      if (u.status_code && ![301, 302].includes(u.status_code)) {
+        const fromPageUrl = u.url;
+        const chains = [];
+
+        const visited = new Set();
+
+        const startLinks = linksMap[u.id] || [];
+        startLinks.forEach(link => {
+          let chain = [];
+          let current = link;
+
+          while (current && !visited.has(current)) {
+            visited.add(current);
+            chain.push(current);
+
+            const info = urlMap[current];
+            if (!info || ![301,302].includes(info.status_code)) break; // stop at non-redirect
+            // follow the redirect
+            const nextLinks = linksMap[info.id] || [];
+            current = nextLinks[0]; // follow first link in chain
+          }
+
+          if (chain.length > 0) {
+            chains.push(chain);
+          }
+        });
+
+        // Flatten chains for table
+        chains.forEach(chain => {
+          if (chain.length > 2) { 
+            const row = { start_url: fromPageUrl, number_of_redirects: chain.length };
+            chain.forEach((url, idx) => {
+              row[`URL_${idx + 1}`] = url;
+            });
+            redirects.push(row);
+          }
+        });
+      }
+    });
+
+    res.render('pages/redirect_chains', { redirects });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Failed to build redirect chains");
+  }
+});
+
 
 app.get('/submit_crawl', (req, res) => {
   res.render('pages/submit_crawl');
