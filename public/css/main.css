@@ -36,7 +36,7 @@ tr:nth-child(even){
   text-align: left;
 }
 .table-primary th { 
-  color: #0b284f;
+  color: white;
   background-color: #1e8c1e;
    --bs-table-color: #fff;                
   --bs-table-bg: var(--colour_1);

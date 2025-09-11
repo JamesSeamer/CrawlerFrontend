@@ -101,11 +101,14 @@ app.get('/images', async (req, res) => {
       "SELECT * FROM seo_crawls.url WHERE content_type LIKE 'image/%' AND crawl_id = ?",
       [crawlId]
     );
-    res.render('pages/images', { images });
+    res.render('pages/images', { images, message: null });
   } catch (err) {
     console.error(err);
     res.status(500).send("Database query failed");
   }
+});
+app.get('/client', (req, res) => {
+  res.render('pages/client', { message: null });
 });
 
 app.get("/meta", async (req, res) => {
